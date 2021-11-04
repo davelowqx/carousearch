@@ -150,7 +150,7 @@ export default function Home() {
                 <div className="flex flex-col md:flex-row w-full">
                   <div className="w-full py-2">
                     <input
-                      className="p-3 w-full bg-gray-100 outline-none border"
+                      className="p-3 w-full active:bg-gray-100 hover:bg-gray-100 outline-none border"
                       placeholder="search"
                       type="text"
                       value={field}
@@ -160,8 +160,8 @@ export default function Home() {
                   <div className="flex w-full py-2">
                     <div className="w-full">
                       <input
-                        className="p-3 w-full bg-gray-100 outline-none border"
-                        placeholder="min price"
+                        className="p-3 w-full active:bg-gray-100 hover:bg-gray-100 outline-none border"
+                        placeholder="min $"
                         type="number"
                         value={minPrice}
                         onChange={(e) => setMinPrice(e.target.value)}
@@ -169,21 +169,24 @@ export default function Home() {
                     </div>
                     <div className="w-full">
                       <input
-                        className="p-3 w-full bg-gray-100 outline-none border"
-                        placeholder="max price"
+                        className="p-3 w-full active:bg-gray-100 hover:bg-gray-100 outline-none border"
+                        placeholder="max $"
                         type="number"
                         value={maxPrice}
                         onChange={(e) => setMaxPrice(e.target.value)}
                       />
                     </div>
                   </div>
-                  <div className="relative py-2 ml-0 md:ml-3 cursor-pointer">
+                  <div
+                    className="relative py-2 ml-0 md:ml-3 cursor-pointer"
+                    style={{ minWidth: "200px" }}
+                  >
                     {showDropdown && (
                       <div
-                        className="absolute bg-white border inset-x-0"
+                        className="absolute bg-white border inset-x-0 rounded-lg"
                         style={{
-                          maxHeight: "70vh",
-                          top: "3rem",
+                          maxHeight: "calc(3.25rem * 10)",
+                          top: "3.25rem",
                           overflowY: "scroll",
                           overflowX: "hidden",
                         }}
@@ -201,28 +204,28 @@ export default function Home() {
                       </div>
                     )}
                     <div
-                      className="bg-gray-200 rounded-lg py-3 px-6  md:w-max text-center z-50"
+                      className="w-full bg-gray-200 hover:bg-gray-300 py-3 px-6 rounded-lg text-center z-50"
                       onClick={() => setShowDropdown(!showDropdown)}
                     >
                       {category?.label} ▼
                     </div>
                   </div>
                   <div className="py-2 ml-0 md:ml-3">
-                    <button className="bg-blue-500 rounded-lg py-3 px-6 w-full md:w-max">
-                      Search
+                    <button className="bg-red-400 hover:bg-red-500 font-semibold rounded-lg py-3 px-12 w-full md:w-max">
+                      SEARCH
                     </button>
                   </div>
                 </div>
               </form>
             </div>
             <div className="flex-grow" />
-            <div>
+            <div className="inline-flex items-center">
               <input
                 type="checkbox"
-                checked={filterBoosted}
+                checked={!filterBoosted}
                 onClick={() => setFilterBoosted(!filterBoosted)}
-              />{" "}
-              Hide Boosted
+              />
+              &nbsp;⚡
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 justify-items-center">
@@ -247,7 +250,7 @@ export default function Home() {
                     <div
                       key={i}
                       style={{ maxWidth: "232px", height: "418px" }}
-                      className="flex flex-col border p-3 rounded-md hover:bg-gray-100"
+                      className="border p-3 rounded-md hover:bg-gray-100"
                     >
                       <a
                         href={`https://carousell.com/p/${title
@@ -255,35 +258,48 @@ export default function Home() {
                           .replace(/ /g, "-")
                           .replace(/[^a-z0-9-_]/g, "")}-${id}`}
                       >
-                        <div className="flex items-center pb-3">
+                        <div className="flex flex-col h-full">
+                          <div className="flex items-center pb-3">
+                            <img
+                              className="rounded-full h-10 "
+                              src={seller?.profilePicture}
+                            />
+                            <div className="flex flex-col px-3">
+                              <div className="">{seller?.username}</div>
+                              <div className="text-gray-400">
+                                {convertTime(
+                                  aboveFold[0].timestampContent.seconds.low
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex-grow" />
+                            <div>{icon(aboveFold[0].component)}</div>
+                          </div>
                           <img
-                            className="rounded-full h-10 "
-                            src={seller?.profilePicture}
+                            className="rounded-md"
+                            style={{
+                              width: "216px",
+                              height: "216px",
+                              objectFit: "cover",
+                            }}
+                            src={photoUrls[0]}
                           />
-                          <div className="flex flex-col px-3">
-                            <div className="">{seller?.username}</div>
+                          <div className="pt-1">{title.substring(0, 30)}</div>
+                          <div className="pt-1 font-semibold">{price}</div>
+                          <div className="flex-grow" />
+                          <div className="flex">
+                            <div>💗 {likesCount}</div>
+                            <div className="flex-grow" />
                             <div className="text-gray-400">
-                              {convertTime(
-                                aboveFold[0].timestampContent.seconds.low
-                              )}
+                              {Math.round(
+                                (likesCount * 3600 * 100) /
+                                  (Date.now() / 1000 -
+                                    aboveFold[0].timestampContent.seconds.low)
+                              ) / 100}
+                              /hr
                             </div>
                           </div>
-                          <div className="flex-grow" />
-                          <div>{icon(aboveFold[0].component)}</div>
                         </div>
-                        <img
-                          className="rounded-md"
-                          style={{
-                            width: "216px",
-                            height: "216px",
-                            objectFit: "cover",
-                          }}
-                          src={photoUrls[0]}
-                        />
-                        <div>{title.substring(0, 30)}</div>
-                        <div className="font-semibold">{price}</div>
-                        <div className="flex-grow" />
-                        <div>💗 {likesCount}</div>
                       </a>
                     </div>
                   );
@@ -296,7 +312,7 @@ export default function Home() {
             {!!searchResults.length && searchResults.length % 20 === 0 ? (
               <button
                 onClick={loadMore}
-                className="my-3 border hover:bg-gray-300 rounded-lg py-3 px-6 w-full md:w-max"
+                className="my-3 border hover:bg-gray-100 rounded-lg py-3 px-6 w-full md:w-max"
               >
                 Load More
               </button>
