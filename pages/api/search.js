@@ -3,7 +3,7 @@
 const https = require("https");
 
 export default function handler(req, res) {
-  console.log(req.body);
+  console.log(JSON.stringify(req.body));
 
   const handleError = (errorMessage) => {
     console.error(errorMessage);

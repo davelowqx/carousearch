@@ -3,38 +3,60 @@ import React, { useRef, useState } from "react";
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
-  const [field, setField] = useState("");
+  const [field, setField] = useState(null);
   const [minPrice, setMinPrice] = useState(null);
   const [maxPrice, setMaxPrice] = useState(null);
   const [filterBoosted, setFilterBoosted] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [category, setCategory] = useState({
+    label: "All Categories",
+    id: null,
+  });
   const sessionRef = useRef(null);
   const searchContextRef = useRef(null);
 
   const fetchData = () => {
+    let postData = {
+      query: field,
+      sortParam: { fieldName: 3 },
+      filters: [
+        {
+          fieldName: "price",
+          rangedFloat: {
+            start: {
+              value: minPrice ?? 0,
+            },
+            end: {
+              value: maxPrice ?? 1000000,
+            },
+          },
+        },
+      ],
+    };
+
+    if (sessionRef.current && searchContextRef.current) {
+      postData = {
+        ...postData,
+        session: sessionRef.current,
+        searchContext: searchContextRef.current,
+      };
+    }
+    if (category.id) {
+      postData.filters.push({
+        fieldName: "collections",
+        idsOrKeywords: {
+          value: [`${category.id}`],
+        },
+      });
+    }
+    console.log(postData);
+
     return fetch("/api/search", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        query: field,
-        sortParam: { fieldName: 3 },
-        filters: [
-          {
-            fieldName: "price",
-            rangedFloat: {
-              start: {
-                value: minPrice ?? 0,
-              },
-              end: {
-                value: maxPrice ?? 10000,
-              },
-            },
-          },
-        ],
-        session: sessionRef.current,
-        searchContext: searchContextRef.current,
-      }),
+      body: JSON.stringify(postData),
     })
       .then((res) => res.json())
       .then(({ session, searchContext, results }) => {
@@ -84,6 +106,39 @@ export default function Home() {
         return status;
     }
   };
+
+  const categories = [
+    { label: "All Categories", id: null },
+    { label: "Cars", id: 32 },
+    { label: "Home Services", id: 1306 },
+    { label: "Property", id: 102 },
+    { label: "Computers And Tech", id: 213 },
+    { label: "Mobile Phones and Gadgets", id: 215 },
+    { label: "Women's Fashion", id: 4 },
+    { label: "Men's Fashion", id: 3 },
+    { label: "Beauty & Personal Care", id: 11 },
+    { label: "Luxury", id: 20 },
+    { label: "Video Gaming", id: 264 },
+    { label: "Audio", id: 207 },
+    { label: "Photography", id: 6 },
+    { label: "Furniture and Home", id: 13 },
+    { label: "Car Accessories", id: 109 },
+    { label: "TV & Home Applicances", id: 30 },
+    { label: "Babies & Kids", id: 19 },
+    { label: "Motorcycles", id: 108 },
+    { label: "Hobbies & Toys", id: 5934 },
+    { label: "Health & Nutrition", id: 5953 },
+    { label: "Sports & Equipment", id: 10 },
+    { label: "Food and Drinks", id: 196 },
+    { label: "Pet Supplies", id: 29 },
+    { label: "Tickets Vouchers", id: 18 },
+    { label: "Learning & Enrichment", id: 1742 },
+    { label: "Lifestyle Services", id: 1916 },
+    { label: "Lifestyle Services", id: 1916 },
+    { label: "Business Services", id: 1747 },
+    { label: "Jobs", id: 1305 },
+  ];
+
   return (
     <div className="text-sm">
       <div className="flex flex-col mx-auto" style={{ maxWidth: "1000px" }}>
@@ -99,7 +154,7 @@ export default function Home() {
                       placeholder="search"
                       type="text"
                       value={field}
-                      onChange={(e) => setField(e.target.value)}
+                      onChange={(e) => setField(e.target.value || null)}
                     />
                   </div>
                   <div className="flex w-full py-2">
@@ -122,7 +177,37 @@ export default function Home() {
                       />
                     </div>
                   </div>
-                  <div className="py-2 w-full ml-0 md:ml-3">
+                  <div className="relative py-2 ml-0 md:ml-3 cursor-pointer">
+                    {showDropdown && (
+                      <div
+                        className="absolute bg-white border inset-x-0"
+                        style={{
+                          maxHeight: "70vh",
+                          top: "3rem",
+                          overflowY: "scroll",
+                          overflowX: "hidden",
+                        }}
+                        onClick={() => setShowDropdown(!showDropdown)}
+                      >
+                        {categories.map(({ label, id }) => (
+                          <div
+                            className="hover:bg-gray-100 p-3"
+                            key={id}
+                            onClick={() => setCategory({ label, id })}
+                          >
+                            {label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div
+                      className="bg-gray-200 rounded-lg py-3 px-6  md:w-max text-center z-50"
+                      onClick={() => setShowDropdown(!showDropdown)}
+                    >
+                      {category?.label} ▼
+                    </div>
+                  </div>
+                  <div className="py-2 ml-0 md:ml-3">
                     <button className="bg-blue-500 rounded-lg py-3 px-6 w-full md:w-max">
                       Search
                     </button>
@@ -207,7 +292,7 @@ export default function Home() {
 
             {loading && <div className="text-center">Loading</div>}
           </div>
-          <div className="w-100 flex flex-col items-center">
+          <div className="flex flex-col items-center">
             {!!searchResults.length && searchResults.length % 20 === 0 ? (
               <button
                 onClick={loadMore}
