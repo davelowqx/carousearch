@@ -19,7 +19,7 @@ export default function handler(req, res) {
     bestMatchEnabled: true,
     canChangeKeyword: false,
     ccid: "1997",
-    count: 100,
+    count: 20,
     countryCode: "SG",
     countryId: "1880251",
     includeSuggestions: false,
@@ -34,7 +34,6 @@ export default function handler(req, res) {
       headers: {
         "Content-Type": "application/json",
         "Content-Length": Buffer.byteLength(data),
-        // host: "www.carousell.sg",
       },
     },
     (res) => {
@@ -44,9 +43,13 @@ export default function handler(req, res) {
         raw += d;
       });
       res.on("end", () => {
-        handleSuccess(
-          JSON.parse(raw).data.results.map((obj) => obj.listingCard)
-        );
+        const json = JSON.parse(raw).data;
+        console.log(json);
+        handleSuccess({
+          results: json.results.map((obj) => obj.listingCard),
+          searchContext: json.searchContext,
+          session: json.session,
+        });
       });
     }
   );

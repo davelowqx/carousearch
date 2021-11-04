@@ -1,20 +1,17 @@
-import Head from "next/head";
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 
 export default function Home() {
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchResultsFiltered, setSearchResultsFiltered] = useState([]);
-  const [field, setField] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [field, setField] = useState("");
   const [minPrice, setMinPrice] = useState(null);
   const [maxPrice, setMaxPrice] = useState(null);
   const [filterBoosted, setFilterBoosted] = useState(false);
+  const sessionRef = useRef(null);
+  const searchContextRef = useRef(null);
 
-  const handleSubmit = (e) => {
-    setLoading(true);
-    e.preventDefault();
-    fetch("/api/search", {
+  const fetchData = () => {
+    return fetch("/api/search", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -35,28 +32,32 @@ export default function Home() {
             },
           },
         ],
+        session: sessionRef.current,
+        searchContext: searchContextRef.current,
       }),
     })
       .then((res) => res.json())
-      .then((searchResults) => {
-        setSearchResults(searchResults);
+      .then(({ session, searchContext, results }) => {
+        sessionRef.current = session;
+        searchContextRef.current = searchContext;
         setLoading(false);
+        return results;
       });
   };
 
-  useEffect(() => {
-    if (filterBoosted) {
-      console.log("remove boosted");
-      setSearchResultsFiltered(
-        searchResults
-          .slice()
-          .filter(({ aboveFold }) => aboveFold[0].component == "time_created")
-      );
-    } else {
-      console.log("add boosted");
-      setSearchResultsFiltered(searchResults);
-    }
-  }, [searchResults, filterBoosted]);
+  const handleSubmit = (e) => {
+    setLoading(true);
+    e.preventDefault();
+    sessionRef.current = null;
+    searchContextRef.current = null;
+    fetchData().then(setSearchResults);
+  };
+
+  const loadMore = () => {
+    fetchData().then((results) => {
+      setSearchResults([...searchResults, ...results]);
+    });
+  };
 
   const convertTime = (timestamp) => {
     const seconds = Math.round(Date.now() / 1000 - timestamp);
@@ -140,9 +141,11 @@ export default function Home() {
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 justify-items-center">
-            {loading && <div>loading</div>}
-            {!loading &&
-              searchResultsFiltered.map(
+            {searchResults
+              .filter(({ aboveFold }) =>
+                filterBoosted ? aboveFold[0].component == "time_created" : true
+              )
+              .map(
                 (
                   { seller, photoUrls, aboveFold, likesCount, price, title },
                   i
@@ -181,11 +184,25 @@ export default function Home() {
                       <div>{title.substring(0, 30)}</div>
                       <div className="font-semibold">{price}</div>
                       <div className="flex-grow" />
-                      <div>{likesCount}💗</div>
+                      <div>💗 {likesCount}</div>
                     </div>
                   );
                 }
               )}
+
+            {loading && <div className="text-center">Loading</div>}
+          </div>
+          <div className="w-100 flex flex-col items-center">
+            {!!searchResults.length && searchResults.length % 20 === 0 ? (
+              <button
+                onClick={loadMore}
+                className="my-3 border hover:bg-gray-300 rounded-lg py-3 px-6 w-full md:w-max"
+              >
+                Load More
+              </button>
+            ) : (
+              <div className="my-3">&nbsp;</div>
+            )}
           </div>
         </div>
       </div>
