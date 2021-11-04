@@ -147,7 +147,15 @@ export default function Home() {
               )
               .map(
                 (
-                  { seller, photoUrls, aboveFold, likesCount, price, title },
+                  {
+                    id,
+                    seller,
+                    photoUrls,
+                    aboveFold,
+                    likesCount,
+                    price,
+                    title,
+                  },
                   i
                 ) => {
                   return (
@@ -156,35 +164,42 @@ export default function Home() {
                       style={{ maxWidth: "232px", height: "418px" }}
                       className="flex flex-col border p-3 rounded-md hover:bg-gray-100"
                     >
-                      <div className="flex items-center pb-3">
-                        <img
-                          className="rounded-full h-10 "
-                          src={seller?.profilePicture}
-                        />
-                        <div className="flex flex-col px-3">
-                          <div className="">{seller?.username}</div>
-                          <div className="text-gray-400">
-                            {convertTime(
-                              aboveFold[0].timestampContent.seconds.low
-                            )}
+                      <a
+                        href={`https://carousell.com/p/${title
+                          .toLowerCase()
+                          .replace(/ /g, "-")
+                          .replace(/[^a-z0-9-_]/g, "")}-${id}`}
+                      >
+                        <div className="flex items-center pb-3">
+                          <img
+                            className="rounded-full h-10 "
+                            src={seller?.profilePicture}
+                          />
+                          <div className="flex flex-col px-3">
+                            <div className="">{seller?.username}</div>
+                            <div className="text-gray-400">
+                              {convertTime(
+                                aboveFold[0].timestampContent.seconds.low
+                              )}
+                            </div>
                           </div>
+                          <div className="flex-grow" />
+                          <div>{icon(aboveFold[0].component)}</div>
                         </div>
+                        <img
+                          className="rounded-md"
+                          style={{
+                            width: "216px",
+                            height: "216px",
+                            objectFit: "cover",
+                          }}
+                          src={photoUrls[0]}
+                        />
+                        <div>{title.substring(0, 30)}</div>
+                        <div className="font-semibold">{price}</div>
                         <div className="flex-grow" />
-                        <div>{icon(aboveFold[0].component)}</div>
-                      </div>
-                      <img
-                        className="rounded-md"
-                        style={{
-                          width: "216px",
-                          height: "216px",
-                          objectFit: "cover",
-                        }}
-                        src={photoUrls[0]}
-                      />
-                      <div>{title.substring(0, 30)}</div>
-                      <div className="font-semibold">{price}</div>
-                      <div className="flex-grow" />
-                      <div>💗 {likesCount}</div>
+                        <div>💗 {likesCount}</div>
+                      </a>
                     </div>
                   );
                 }
