@@ -46,7 +46,13 @@ export default function handler(req, res) {
         const json = JSON.parse(raw).data;
         console.log(json);
         handleSuccess({
-          results: json.results.map((obj) => obj.listingCard),
+          results: json.results
+            .map((obj) => obj.listingCard)
+            .sort(
+              (a, b) =>
+                b.aboveFold[0].timestampContent.seconds.low -
+                a.aboveFold[0].timestampContent.seconds.low
+            ),
           searchContext: json.searchContext,
           session: json.session,
         });

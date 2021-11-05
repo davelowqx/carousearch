@@ -6,7 +6,7 @@ function MyApp({ Component, pageProps }) {
     title: "Carousearch",
     desc: "Search Carousell Quickly!",
     url: "https://carousearch.vercel.app",
-    img: "",
+    img: "https://mweb-cdn.karousell.com/build/fb-og-3Lk91FbWAJ.png",
   };
   return (
     <>

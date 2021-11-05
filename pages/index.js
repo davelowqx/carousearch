@@ -68,6 +68,7 @@ export default function Home() {
   };
 
   const handleSubmit = (e) => {
+    setSearchResults([]);
     setLoading(true);
     e.preventDefault();
     sessionRef.current = null;
@@ -221,6 +222,7 @@ export default function Home() {
             <div className="flex-grow" />
             <div className="inline-flex items-center">
               <input
+                className="appearance:none checked:bg-red-400 checked:border-transparent"
                 type="checkbox"
                 checked={!filterBoosted}
                 onClick={() => setFilterBoosted(!filterBoosted)}
@@ -305,14 +307,14 @@ export default function Home() {
                   );
                 }
               )}
-
-            {loading && <div className="text-center">Loading</div>}
           </div>
           <div className="flex flex-col items-center">
+            {loading && <div className="text-center">Loading</div>}
             {!!searchResults.length && searchResults.length % 20 === 0 ? (
               <button
                 onClick={loadMore}
-                className="my-3 border hover:bg-gray-100 rounded-lg py-3 px-6 w-full md:w-max"
+                className="my-3 border hover:bg-gray-100 rounded-lg py-3 px-6 w-full md:w-max disabled:opacity-50"
+                disabled={loading}
               >
                 Load More
               </button>
