@@ -3,8 +3,6 @@
 const https = require("https");
 
 export default function handler(req, res) {
-  console.log(JSON.stringify(req.body));
-
   const handleError = (errorMessage) => {
     console.error(errorMessage);
     res.status(400).json({ error: errorMessage });
@@ -15,17 +13,21 @@ export default function handler(req, res) {
     res.status(200).json(data);
   };
 
-  const data = JSON.stringify({
+  const postData = JSON.stringify({
     bestMatchEnabled: true,
     canChangeKeyword: false,
-    ccid: "1997",
     count: 20,
     countryCode: "SG",
     countryId: "1880251",
     includeSuggestions: false,
     locale: "en",
+    sortParam: {
+      fieldName: "3",
+    },
     ...req.body,
   });
+
+  console.log(postData);
 
   const request = https.request(
     "https://www.carousell.sg/api-service/search/cf/4.0/search/",
@@ -33,7 +35,7 @@ export default function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(data),
+        "Content-Length": Buffer.byteLength(postData),
       },
     },
     (res) => {
@@ -43,19 +45,22 @@ export default function handler(req, res) {
         raw += d;
       });
       res.on("end", () => {
-        const json = JSON.parse(raw).data;
-        console.log(json);
-        handleSuccess({
-          results: json.results
-            .map((obj) => obj.listingCard)
-            .sort(
-              (a, b) =>
-                b.aboveFold[0].timestampContent.seconds.low -
-                a.aboveFold[0].timestampContent.seconds.low
-            ),
-          searchContext: json.searchContext,
-          session: json.session,
-        });
+        try {
+          const json = JSON.parse(raw).data;
+          handleSuccess({
+            results: json.results
+              .map((obj) => obj.listingCard)
+              .sort(
+                (a, b) =>
+                  b.aboveFold[0].timestampContent.seconds.low -
+                  a.aboveFold[0].timestampContent.seconds.low
+              ),
+            searchContext: json.searchContext,
+            session: json.session,
+          });
+        } catch (e) {
+          handleError("JSON parse error");
+        }
       });
     }
   );
@@ -63,6 +68,6 @@ export default function handler(req, res) {
   request.on("error", (error) => {
     handleError(error.message);
   });
-  request.write(data);
+  request.write(postData);
   request.end();
 }

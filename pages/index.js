@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
+  const [error, setError] = useState("");
   const [field, setField] = useState(null);
   const [minPrice, setMinPrice] = useState(null);
   const [maxPrice, setMaxPrice] = useState(null);
@@ -16,9 +17,12 @@ export default function Home() {
   const searchContextRef = useRef(null);
 
   const fetchData = () => {
+    setError("");
     let postData = {
       query: field,
-      sortParam: { fieldName: 3 },
+      sortParam: {
+        fieldName: "3",
+      },
       filters: [
         {
           fieldName: "price",
@@ -59,11 +63,16 @@ export default function Home() {
       body: JSON.stringify(postData),
     })
       .then((res) => res.json())
-      .then(({ session, searchContext, results }) => {
-        sessionRef.current = session;
-        searchContextRef.current = searchContext;
+      .then(({ error, session, searchContext, results }) => {
         setLoading(false);
-        return results;
+        if (error) {
+          setError(error);
+          return [];
+        } else {
+          sessionRef.current = session;
+          searchContextRef.current = searchContext;
+          return results;
+        }
       });
   };
 
@@ -310,6 +319,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col items-center">
             {loading && <div className="text-center">Loading</div>}
+            {error && <div className="text-center text-red-400">{error}</div>}
             {!!searchResults.length && searchResults.length % 20 === 0 ? (
               <button
                 onClick={loadMore}
