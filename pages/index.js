@@ -20,9 +20,6 @@ export default function Home() {
     setError("");
     let postData = {
       query: field,
-      sortParam: {
-        fieldName: "3",
-      },
       filters: [
         {
           fieldName: "price",
